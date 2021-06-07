@@ -7,4 +7,6 @@
     <con:list name="ActiveAdminServerAliases">
         <con:ListItem>vtcm75en83g6v1r87ytm7lihi</con:ListItem>
     </con:list>
+    <con:item name="DefaultActiveServerAlias">vtcm75en83g6v1r87ytm7lihi</con:item>
+    <con:item name="DefaultActiveAdminServerAlias">vtcm75en83g6v1r87ytm7lihi</con:item>
 </con:config>
