@@ -1,0 +1,113 @@
+############################################################
+# Global values
+############################################################
+global:
+
+  ############################################################
+  #  addReleaseNameToResource: Provides global ability to add
+  #                            names to kubernetes resources
+  #                      none: No use of Release.Name
+  #                    append: Appends the Release.Name
+  #                   prepend: Prepends the Release.Name ** DEFAULT **
+  ############################################################
+  addReleaseNameToResource: prepend
+  ############################################################
+  # Ingress
+  #
+  #          ingress.enabled: {true | false}
+  # ingress.addReleaseToHost: {prepend | append | subdomain | none}
+  #    ingress.defaultDomain: Replaces with "_defaultDomain_" in host fields
+  # ingress.defaultTlsSecret: Replaces with "_defaultTlsSecret_" in tls.secretName
+  ############################################################
+  ingress:
+    enabled: true
+    addReleaseNameToHost: prepend
+    defaultDomain: ping-devops.com
+    defaultTlsSecret:
+    annotations:
+      # nginx example
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      kubernetes.io/ingress.class: "nginx-public"
+
+############################################################
+# Ping Identity
+#
+############################################################
+
+############################################################
+# Ping DevOps Service Customizations
+#
+# This provides:
+#  - PingFederate Administrative Console with native authentication
+#  - PingFederate Engines clustered with console
+############################################################
+pingfederate-admin:
+  enabled: true
+  image:
+    repository: pingidentity
+    name: pingfederate
+    tag: 10.3.2-edge
+    pullPolicy: IfNotPresent
+  envs:
+    SERVER_PROFILE_URL: "https://github.com/tarunmadiraju/helm-lab.git"
+    SERVER_PROFILE_PATH: "baseline/pingfederate"
+
+pingfederate-engine:
+  enabled: true
+  image:
+    repository: pingidentity
+    name: pingfederate
+    tag: 10.3.2-edge
+    pullPolicy: IfNotPresent
+  envs:
+    SERVER_PROFILE_URL: "https://github.com/tarunmadiraju/helm-lab.git"
+    SERVER_PROFILE_PATH: "baseline/pingfederate"
+
+pingdirectory:
+  enabled: true
+  name: pingdirectory
+  image:
+    name: pingdirectory
+
+  
+  envs:
+    SERVER_PROFILE_URL: https://github.com/tarunmadiraju/helm-lab.git
+    SERVER_PROFILE_PATH: baseline/pingdirectory
+    MAKELDIF_USERS: "20000"
+
+  services:
+    ldap:
+      servicePort: 389
+      containerPort: 1389
+      dataService: true
+    ldaps:
+      servicePort: 636
+      containerPort: 1636
+      dataService: true
+      clusterService: true
+    https:
+      servicePort: 443
+      containerPort: 1443
+      ingressPort: 443
+      dataService: true
+
+  ingress:
+    hosts:
+      - host: pingdirectory._defaultDomain_
+        paths:
+        - path: /
+          backend:
+            serviceName: https
+    tls:
+      - secretName: _defaultTlsSecret_
+        hosts:
+          - pingdirectory._defaultDomain_
+
+  probes:
+    liveness:
+      failureThreshold: 120
+    readiness:
+      periodSeconds: 30
+      failureThreshold: 4
+
+
